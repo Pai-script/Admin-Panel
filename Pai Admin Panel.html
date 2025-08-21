@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Key Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary: #7209b7;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --bg: #f8fafc;
+            --bg-alt: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --bg: #0f172a;
+            --bg-alt: #1e293b;
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-alt);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-subtitle {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            width: 48px;
+            height: 24px;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0 3px;
+        }
+
+        .theme-toggle-handle {
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            transition: var(--transition);
+            left: 3px;
+        }
+
+        .theme-toggle.dark .theme-toggle-handle {
+            left: calc(100% - 21px);
+        }
+
+        .header-time {
+            text-align: right;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            background: var(--bg-alt);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .stat::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .stat:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-title {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* Layout */
+        .main {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-alt);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            height: fit-content;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-light);
+        }
+
+        /* Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #b5179e);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #b5179e, var(--danger));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(247, 37, 133, 0.25);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-alt);
+            font-size: 0.85rem;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table tbody tr {
+            transition: var(--transition);
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Status */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(76, 201, 240, 0.15);
+            color: var(--success);
+        }
+
+        .status-expired {
+            background: rgba(247, 37, 133, 0.15);
+            color: var(--danger);
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-alt);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            max-width: 450px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: var(--transition);
+            border: 1px solid var(--border);
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 1.25rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1100;
+        }
+
+        .toast {
+            background: var(--bg-alt);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            min-width: 300px;
+            transform: translateX(100%);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast-error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .toast-success .toast-icon {
+            background: rgba(76, 201, 240, 0.15);
+            color: var(--success);
+        }
+
+        .toast-error .toast-icon {
+            background: rgba(247, 37, 133, 0.15);
+            color: var(--danger);
+        }
+
+        .toast-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .main {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            .header {
+                padding: 0.875rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 0.75rem;
+            }
+
+            .header-right {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .header-title {
+                font-size: 1.25rem;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.875rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.625rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 0.375rem;
+            }
+
+            .modal {
+                width: 95%;
+                margin: 0.75rem;
+            }
+
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding: 1rem;
+            }
+
+            .toast {
+                min-width: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .header-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+
+            .stat {
+                padding: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .table {
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                font-size: 0.85rem;
+                padding: 0.625rem 1rem;
+            }
+
+            .btn-sm {
+                padding: 0.375rem 0.625rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 600; }
+        .text-sm { font-size: 0.85rem; }
+        .text-xs { font-size: 0.75rem; }
+        .mb-0 { margin-bottom: 0; }
+        .w-full { width: 100%; }
+        .mt-1 { margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div>
+                    <h1 class="header-title">License Key Manager</h1>
+                    <p class="header-subtitle">Admin Dashboard</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="theme-toggle" id="themeToggle">
+                    <div class="theme-toggle-handle"></div>
+                </div>
+                <div class="header-time">
+                    <div><i class="fas fa-calendar"></i> <span id="currentDate"></span></div>
+                    <div><i class="fas fa-clock"></i> <span id="currentTime"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-header">
+                    <span class="stat-title">Total Keys</span>
+                    <div class="stat-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="totalKeys">0</div>
+                <div class="stat-label">All license keys</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-header">
+                    <span class="stat-title">Active</span>
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="activeKeys">0</div>
+                <div class="stat-label">Currently valid</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-header">
+                    <span class="stat-title">Expired</span>
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="expiredKeys">0</div>
+                <div class="stat-label">Need attention</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Create Form -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <h2>Create New Key</h2>
+                </div>
+
+                <form id="keyForm">
+                    <div class="form-group">
+                        <label class="form-label">Key Name</label>
+                        <input type="text" id="keyInput" class="form-input" placeholder="Enter unique key name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Validity Period</label>
+                        <select id="validitySelect" class="form-select" required>
+                            <option value="">Select duration</option>
+                            <option value="5">5 Minutes</option>
+                            <option value="10">10 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                            <option value="60">60 Minutes</option>
+                            <option value="1440">1 Day</option>
+                            <option value="4320">3 Days</option>
+                            <option value="10080">1 Week</option>
+                            <option value="21600">15 Days</option>
+                            <option value="43200">1 Month</option>
+                            <option value="129600">3 Months</option>
+                            <option value="525600">1 Year</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="fas fa-plus-circle"></i>
+                        Generate Key
+                    </button>
+                </form>
+            </div>
+
+            <!-- Keys Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <h2>License Keys</h2>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="table" id="keyTable">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Expiration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="loading">
+                                    <div class="spinner"></div>
+                                    Loading keys...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-trash-alt" style="color: var(--danger);"></i>
+                    Confirm Deletion
+                </div>
+                <button class="modal-close" onclick="closeModal('deleteModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete key <strong id="deleteKeyName"></strong>?</p>
+                <p class="text-xs text-light mt-1">
+                    This action will permanently remove the key and cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i>
+                    Delete Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNDFi-i58PXRAu0w57armj_Dpn42X6i5g",
+            authDomain: "admin-panel-17295.firebaseapp.com",
+            databaseURL: "https://admin-panel-17295-default-rtdb.firebaseio.com",
+            projectId: "admin-panel-17295",
+            storageBucket: "admin-panel-17295.firebasestorage.app",
+            messagingSenderId: "185281989467",
+            appId: "1:185281989467:web:e47fb327d0c4223483287e",
+            measurementId: "G-63JZ6YDWXQ"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let allKeys = {};
+        let currentDeleteKey = null;
+
+        //
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            loadKeys();
+            
+            // Event listeners
+            document.getElementById('keyForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createKey();
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+            
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Close modals when clicking outside
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        closeModal(overlay.id);
+                    }
+                });
+            });
+            
+            // 
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggle').classList.add('dark');
+            }
+        });
+
+        // Toggle dark/light theme
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            body.classList.toggle('dark-mode');
+            themeToggle.classList.toggle('dark');
+            
+            // Save preference
+            localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+        }
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', {
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // Show toast notification
+        function showToast(type, title, message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas fa-${icon}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 4000);
+        }
+
+        // Show modal
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Create a new key
+        function createKey() {
+            const key = document.getElementById('keyInput').value.trim();
+            const minutes = parseInt(document.getElementById('validitySelect').value);
+
+            if (!key) {
+                showToast('error', 'Error', 'Please enter a key name');
+                return;
+            }
+            if (!minutes) {
+                showToast('error', 'Error', 'Please select a validity period');
+                return;
+            }
+
+            // Check if key already exists in Firebase directly
+            db.ref('users/' + key).once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    showToast('error', 'Error', 'This key already exists');
+                    return;
+                }
+
+                const now = Date.now();
+                const expiresAt = now + minutes * 60000; // Convert minutes to milliseconds
+
+                db.ref('users/' + key).set({
+                    createdAt: now,
+                    expiresAt: expiresAt
+                }).then(() => {
+                    showToast('success', 'Success', 'License key created successfully');
+                    document.getElementById('keyForm').reset();
+                    loadKeys();
+                }).catch((error) => {
+                    showToast('error', 'Error', 'Failed to create key: ' + error.message);
+                });
+            }).catch((error) => {
+                showToast('error', 'Error', 'Failed to check key: ' + error.message);
+            });
+        }
+
+        // Load all keys from Firebase
+        function loadKeys() {
+            db.ref('users').once('value').then(snapshot => {
+                allKeys = snapshot.val() || {};
+                updateTable();
+                updateStats();
+            }).catch((error) => {
+                showToast('error', 'Error', 'Failed to load keys: ' + error.message);
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            const now = Date.now();
+            let total = 0, active = 0, expired = 0;
+
+            Object.keys(allKeys).forEach(key => {
+                const data = allKeys[key];
+                total++;
+                
+                if (data.expiresAt > now) {
+                    active++;
+                } else {
+                    expired++;
+                }
+            });
+
+            document.getElementById('totalKeys').textContent = total;
+            document.getElementById('activeKeys').textContent = active;
+            document.getElementById('expiredKeys').textContent = expired;
+        }
+
+        // Update the keys table
+        function updateTable() {
+            const tbody = document.querySelector('#keyTable tbody');
+            tbody.innerHTML = '';
+
+            if (Object.keys(allKeys).length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center" style="padding: 2rem; color: var(--text-light);">
+                            <i class="fas fa-key" style="font-size: 2rem; display: block; margin-bottom: 0.75rem; opacity: 0.5;"></i>
+                            No license keys found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            Object.keys(allKeys).forEach(key => {
+                const data = allKeys[key];
+                const now = Date.now();
+                const isExpired = data.expiresAt <= now;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="font-bold">${key}</div>
+                        <div class="text-xs text-light">
+                            Created: ${new Date(data.createdAt).toLocaleDateString()}
+                        </div>
+                    </td>
+                    <td>
+                        <div>${new Date(data.expiresAt).toLocaleDateString()}</div>
+                        <div class="text-xs text-light">
+                            ${new Date(data.expiresAt).toLocaleTimeString()}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status ${isExpired ? 'status-expired' : 'status-active'}">
+                            <i class="fas fa-${isExpired ? 'times' : 'check'}"></i>
+                            ${isExpired ? 'Expired' : 'Active'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-danger btn-sm" onclick="deleteKey('${key}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Delete key confirmation
+        function deleteKey(key) {
+            currentDeleteKey = key;
+            document.getElementById('deleteKeyName').textContent = key;
+            showModal('deleteModal');
+        }
+
+        // Confirm key deletion
+        function confirmDelete() {
+            if (!currentDeleteKey) return;
+            
+            db.ref('users/' + currentDeleteKey).remove().then(() => {
+                showToast('success', 'Deleted', 'License key removed successfully');
+                closeModal('deleteModal');
+                currentDeleteKey = null;
+                loadKeys();
+            }).catch((error) => {
+                showToast('error', 'Error', 'Failed to delete key: ' + error.message);
+            });
+        }
+
+        // Auto-refresh keys every 30 seconds
+        setInterval(loadKeys, 30000);
+    </script>
+</body>
+</html>
