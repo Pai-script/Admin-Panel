@@ -419,6 +419,11 @@
             color: var(--danger);
         }
 
+        .status-used {
+            background: rgba(248, 150, 30, 0.15);
+            color: var(--warning);
+        }
+
         /* Actions */
         .actions {
             display: flex;
@@ -767,6 +772,17 @@
 
             <div class="stat">
                 <div class="stat-header">
+                    <span class="stat-title">Used</span>
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="usedKeys">0</div>
+                <div class="stat-label">Assigned to users</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-header">
                     <span class="stat-title">Expired</span>
                     <div class="stat-icon">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -812,6 +828,12 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="userLimitCheckbox"> Enable User Limit (1 key per user)
+                        </label>
+                    </div>
+
                     <button type="submit" class="btn btn-primary w-full">
                         <i class="fas fa-plus-circle"></i>
                         Generate Key
@@ -834,13 +856,14 @@
                             <tr>
                                 <th>Key</th>
                                 <th>Expiration</th>
+                                <th>User</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="4" class="loading">
+                                <td colspan="5" class="loading">
                                     <div class="spinner"></div>
                                     Loading keys...
                                 </td>
@@ -880,6 +903,42 @@
         </div>
     </div>
 
+    <!-- View User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-user" style="color: var(--primary);"></i>
+                    Key User Information
+                </div>
+                <button class="modal-close" onclick="closeModal('userModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">License Key</label>
+                    <input type="text" id="viewKeyName" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chat ID</label>
+                    <input type="text" id="viewChatId" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Activation Date</label>
+                    <input type="text" id="viewActivationDate" class="form-input" readonly>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('userModal')">Close</button>
+                <button class="btn btn-danger" id="clearUserBtn" onclick="clearUserAssignment()">
+                    <i class="fas fa-user-times"></i>
+                    Clear User
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -906,8 +965,8 @@
 
         let allKeys = {};
         let currentDeleteKey = null;
+        let currentViewKey = null;
 
-        //
         document.addEventListener('DOMContentLoaded', function() {
             updateDateTime();
             setInterval(updateDateTime, 1000);
@@ -933,7 +992,7 @@
                 });
             });
             
-            // 
+            // Initialize theme
             if (localStorage.getItem('darkMode') === 'true') {
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeToggle').classList.add('dark');
@@ -1011,6 +1070,7 @@
         function createKey() {
             const key = document.getElementById('keyInput').value.trim();
             const minutes = parseInt(document.getElementById('validitySelect').value);
+            const userLimit = document.getElementById('userLimitCheckbox').checked;
 
             if (!key) {
                 showToast('error', 'Error', 'Please enter a key name');
@@ -1031,12 +1091,16 @@
                 const now = Date.now();
                 const expiresAt = now + minutes * 60000; // Convert minutes to milliseconds
 
-                db.ref('users/' + key).set({
+                const keyData = {
                     createdAt: now,
-                    expiresAt: expiresAt
-                }).then(() => {
+                    expiresAt: expiresAt,
+                    userLimit: userLimit
+                };
+
+                db.ref('users/' + key).set(keyData).then(() => {
                     showToast('success', 'Success', 'License key created successfully');
                     document.getElementById('keyForm').reset();
+                    document.getElementById('userLimitCheckbox').checked = false;
                     loadKeys();
                 }).catch((error) => {
                     showToast('error', 'Error', 'Failed to create key: ' + error.message);
@@ -1060,14 +1124,18 @@
         // Update statistics
         function updateStats() {
             const now = Date.now();
-            let total = 0, active = 0, expired = 0;
+            let total = 0, active = 0, expired = 0, used = 0;
 
             Object.keys(allKeys).forEach(key => {
                 const data = allKeys[key];
                 total++;
                 
                 if (data.expiresAt > now) {
-                    active++;
+                    if (data.chatId) {
+                        used++;
+                    } else {
+                        active++;
+                    }
                 } else {
                     expired++;
                 }
@@ -1076,6 +1144,7 @@
             document.getElementById('totalKeys').textContent = total;
             document.getElementById('activeKeys').textContent = active;
             document.getElementById('expiredKeys').textContent = expired;
+            document.getElementById('usedKeys').textContent = used;
         }
 
         // Update the keys table
@@ -1086,7 +1155,7 @@
             if (Object.keys(allKeys).length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center" style="padding: 2rem; color: var(--text-light);">
+                        <td colspan="5" class="text-center" style="padding: 2rem; color: var(--text-light);">
                             <i class="fas fa-key" style="font-size: 2rem; display: block; margin-bottom: 0.75rem; opacity: 0.5;"></i>
                             No license keys found
                         </td>
@@ -1099,62 +1168,102 @@
                 const data = allKeys[key];
                 const now = Date.now();
                 const isExpired = data.expiresAt <= now;
+                const isUsed = data.chatId && !isExpired;
                 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+                let statusClass = 'status-active';
+                let statusText = 'Active';
+                let statusIcon = 'check';
+                
+                if (isExpired) {
+                    statusClass = 'status-expired';
+                    statusText = 'Expired';
+                    statusIcon = 'times';
+                } else if (isUsed) {
+                    statusClass = 'status-used';
+                    statusText = 'Used';
+                    statusIcon = 'user';
+                }
+
+                const expiresAt = new Date(data.expiresAt).toLocaleString();
+                const userInfo = data.chatId ? data.chatId : 'Not assigned';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="font-bold">${key}</td>
+                    <td>${expiresAt}</td>
+                    <td>${userInfo}</td>
                     <td>
-                        <div class="font-bold">${key}</div>
-                        <div class="text-xs text-light">
-                            Created: ${new Date(data.createdAt).toLocaleDateString()}
-                        </div>
-                    </td>
-                    <td>
-                        <div>${new Date(data.expiresAt).toLocaleDateString()}</div>
-                        <div class="text-xs text-light">
-                            ${new Date(data.expiresAt).toLocaleTimeString()}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="status ${isExpired ? 'status-expired' : 'status-active'}">
-                            <i class="fas fa-${isExpired ? 'times' : 'check'}"></i>
-                            ${isExpired ? 'Expired' : 'Active'}
+                        <span class="status ${statusClass}">
+                            <i class="fas fa-${statusIcon}"></i>
+                            ${statusText}
                         </span>
                     </td>
                     <td>
                         <div class="actions">
-                            <button class="btn btn-danger btn-sm" onclick="deleteKey('${key}')" title="Delete">
+                            ${isUsed ? `
+                                <button class="btn btn-secondary btn-sm" onclick="viewUser('${key}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-danger btn-sm" onclick="deleteKey('${key}')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                
+                tbody.appendChild(row);
             });
         }
 
-        // Delete key confirmation
+        // View user information
+        function viewUser(key) {
+            const data = allKeys[key];
+            currentViewKey = key;
+            
+            document.getElementById('viewKeyName').value = key;
+            document.getElementById('viewChatId').value = data.chatId || 'Not assigned';
+            document.getElementById('viewActivationDate').value = data.activationDate ? 
+                new Date(data.activationDate).toLocaleString() : 'Not activated';
+            
+            showModal('userModal');
+        }
+
+        // Clear user assignment
+        function clearUserAssignment() {
+            if (!currentViewKey) return;
+            
+            db.ref('users/' + currentViewKey).update({
+                chatId: null,
+                activationDate: null
+            }).then(() => {
+                showToast('success', 'Success', 'User assignment cleared');
+                closeModal('userModal');
+                loadKeys();
+            }).catch((error) => {
+                showToast('error', 'Error', 'Failed to clear user: ' + error.message);
+            });
+        }
+
+        // Delete key
         function deleteKey(key) {
             currentDeleteKey = key;
             document.getElementById('deleteKeyName').textContent = key;
             showModal('deleteModal');
         }
 
-        // Confirm key deletion
+        // Confirm delete
         function confirmDelete() {
             if (!currentDeleteKey) return;
             
             db.ref('users/' + currentDeleteKey).remove().then(() => {
-                showToast('success', 'Deleted', 'License key removed successfully');
+                showToast('success', 'Success', 'Key deleted successfully');
                 closeModal('deleteModal');
-                currentDeleteKey = null;
                 loadKeys();
             }).catch((error) => {
                 showToast('error', 'Error', 'Failed to delete key: ' + error.message);
             });
         }
-
-        // Auto-refresh keys every 30 seconds
-        setInterval(loadKeys, 30000);
     </script>
 </body>
 </html>
