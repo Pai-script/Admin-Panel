@@ -144,6 +144,38 @@
             line-height: 1.3;
         }
 
+        /* Navigation */
+        .nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--bg-alt);
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .nav-item {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .nav-item:not(.active):hover {
+            background: var(--bg);
+        }
+
         /* Stats */
         .stats {
             display: grid;
@@ -642,6 +674,10 @@
                 font-size: 1.25rem;
             }
 
+            .nav {
+                flex-direction: column;
+            }
+
             .stats {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.875rem;
@@ -746,6 +782,18 @@
             </div>
         </div>
 
+        <!-- Navigation -->
+        <div class="nav" id="keyTypeNav">
+            <div class="nav-item active" data-type="pai">
+                <i class="fas fa-user-check"></i>
+                PAI's KEYS
+            </div>
+            <div class="nav-item" data-type="kozaw">
+                <i class="fas fa-user-check"></i>
+                KOZAW's KEYS
+            </div>
+        </div>
+
         <!-- Stats -->
         <div class="stats">
             <div class="stat">
@@ -811,6 +859,14 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">Key Type</label>
+                        <select id="keyTypeSelect" class="form-select" required>
+                            <option value="pai">PAI's KEY</option>
+                            <option value="kozaw">KOZAW's KEY</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">Validity Period</label>
                         <select id="validitySelect" class="form-select" required>
                             <option value="">Select duration</option>
@@ -847,7 +903,7 @@
                     <div class="card-icon">
                         <i class="fas fa-list"></i>
                     </div>
-                    <h2>License Keys</h2>
+                    <h2 id="tableTitle">PAI's License Keys</h2>
                 </div>
 
                 <div class="table-wrap">
@@ -855,6 +911,7 @@
                         <thead>
                             <tr>
                                 <th>Key</th>
+                                <th>Type</th>
                                 <th>Expiration</th>
                                 <th>User</th>
                                 <th>Status</th>
@@ -863,7 +920,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="5" class="loading">
+                                <td colspan="6" class="loading">
                                     <div class="spinner"></div>
                                     Loading keys...
                                 </td>
@@ -921,6 +978,10 @@
                     <input type="text" id="viewKeyName" class="form-input" readonly>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">Key Type</label>
+                    <input type="text" id="viewKeyType" class="form-input" readonly>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Chat ID</label>
                     <input type="text" id="viewChatId" class="form-input" readonly>
                 </div>
@@ -966,6 +1027,7 @@
         let allKeys = {};
         let currentDeleteKey = null;
         let currentViewKey = null;
+        let currentKeyType = 'pai'; // Default to PAI's keys
 
         document.addEventListener('DOMContentLoaded', function() {
             updateDateTime();
@@ -982,6 +1044,25 @@
             
             // Theme toggle
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Navigation toggle
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Update active state
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update current key type
+                    currentKeyType = this.getAttribute('data-type');
+                    
+                    // Update table title
+                    document.getElementById('tableTitle').textContent = 
+                        currentKeyType === 'pai' ? "PAI's License Keys" : "KOZAW's License Keys";
+                    
+                    // Reload keys for selected type
+                    loadKeys();
+                });
+            });
             
             // Close modals when clicking outside
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -1069,6 +1150,7 @@
         // Create a new key
         function createKey() {
             const key = document.getElementById('keyInput').value.trim();
+            const keyType = document.getElementById('keyTypeSelect').value;
             const minutes = parseInt(document.getElementById('validitySelect').value);
             const userLimit = document.getElementById('userLimitCheckbox').checked;
 
@@ -1094,137 +1176,185 @@
                 const keyData = {
                     createdAt: now,
                     expiresAt: expiresAt,
-                    userLimit: userLimit
+                    userLimit: userLimit,
+                    keyType: keyType
                 };
 
-                db.ref('users/' + key).set(keyData).then(() => {
-                    showToast('success', 'Success', 'License key created successfully');
-                    document.getElementById('keyForm').reset();
-                    document.getElementById('userLimitCheckbox').checked = false;
-                    loadKeys();
-                }).catch((error) => {
-                    showToast('error', 'Error', 'Failed to create key: ' + error.message);
-                });
-            }).catch((error) => {
-                showToast('error', 'Error', 'Failed to check key: ' + error.message);
+                db.ref('users/' + key).set(keyData)
+                    .then(() => {
+                        showToast('success', 'Success', 'Key created successfully');
+                        document.getElementById('keyForm').reset();
+                        loadKeys();
+                    })
+                    .catch(error => {
+                        showToast('error', 'Error', 'Failed to create key: ' + error.message);
+                    });
             });
         }
 
-        // Load all keys from Firebase
+        // Load keys from Firebase
         function loadKeys() {
+            const tableBody = document.querySelector('#keyTable tbody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="loading">
+                        <div class="spinner"></div>
+                        Loading keys...
+                    </td>
+                </tr>
+            `;
+
             db.ref('users').once('value').then(snapshot => {
                 allKeys = snapshot.val() || {};
-                updateTable();
-                updateStats();
-            }).catch((error) => {
-                showToast('error', 'Error', 'Failed to load keys: ' + error.message);
+                
+                // Filter keys by current type
+                const filteredKeys = Object.entries(allKeys).filter(([key, data]) => {
+                    return data.keyType === currentKeyType;
+                });
+                
+                // Update stats
+                updateStats(filteredKeys);
+                
+                // Render table
+                renderKeysTable(filteredKeys);
+            }).catch(error => {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            Error loading keys: ${error.message}
+                        </td>
+                    </tr>
+                `;
             });
         }
 
-        // Update statistics
-        function updateStats() {
+        // Update stats
+        function updateStats(keys) {
             const now = Date.now();
-            let total = 0, active = 0, expired = 0, used = 0;
+            let total = keys.length;
+            let active = 0;
+            let used = 0;
+            let expired = 0;
 
-            Object.keys(allKeys).forEach(key => {
-                const data = allKeys[key];
-                total++;
-                
-                if (data.expiresAt > now) {
-                    if (data.chatId) {
-                        used++;
-                    } else {
-                        active++;
-                    }
-                } else {
+            keys.forEach(([key, data]) => {
+                if (data.expiresAt < now) {
                     expired++;
+                } else {
+                    active++;
+                }
+                
+                if (data.chatId) {
+                    used++;
                 }
             });
 
             document.getElementById('totalKeys').textContent = total;
             document.getElementById('activeKeys').textContent = active;
-            document.getElementById('expiredKeys').textContent = expired;
             document.getElementById('usedKeys').textContent = used;
+            document.getElementById('expiredKeys').textContent = expired;
         }
 
-        // Update the keys table
-        function updateTable() {
-            const tbody = document.querySelector('#keyTable tbody');
-            tbody.innerHTML = '';
-
-            if (Object.keys(allKeys).length === 0) {
-                tbody.innerHTML = `
+        // Render keys table
+        function renderKeysTable(keys) {
+            const tableBody = document.querySelector('#keyTable tbody');
+            
+            if (keys.length === 0) {
+                tableBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center" style="padding: 2rem; color: var(--text-light);">
-                            <i class="fas fa-key" style="font-size: 2rem; display: block; margin-bottom: 0.75rem; opacity: 0.5;"></i>
-                            No license keys found
+                        <td colspan="6" class="text-center">
+                            No ${currentKeyType === 'pai' ? "PAI's" : "KOZAW's"} keys found
                         </td>
                     </tr>
                 `;
                 return;
             }
 
-            Object.keys(allKeys).forEach(key => {
-                const data = allKeys[key];
-                const now = Date.now();
-                const isExpired = data.expiresAt <= now;
-                const isUsed = data.chatId && !isExpired;
+            const now = Date.now();
+            let html = '';
+
+            keys.forEach(([key, data]) => {
+                const createdAt = new Date(data.createdAt);
+                const expiresAt = new Date(data.expiresAt);
+                const isExpired = expiresAt < now;
+                const isUsed = !!data.chatId;
                 
                 let statusClass = 'status-active';
                 let statusText = 'Active';
-                let statusIcon = 'check';
                 
                 if (isExpired) {
                     statusClass = 'status-expired';
                     statusText = 'Expired';
-                    statusIcon = 'times';
                 } else if (isUsed) {
                     statusClass = 'status-used';
                     statusText = 'Used';
-                    statusIcon = 'user';
                 }
-
-                const expiresAt = new Date(data.expiresAt).toLocaleString();
-                const userInfo = data.chatId ? data.chatId : 'Not assigned';
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="font-bold">${key}</td>
-                    <td>${expiresAt}</td>
-                    <td>${userInfo}</td>
-                    <td>
-                        <span class="status ${statusClass}">
-                            <i class="fas fa-${statusIcon}"></i>
-                            ${statusText}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="actions">
-                            ${isUsed ? `
-                                <button class="btn btn-secondary btn-sm" onclick="viewUser('${key}')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            ` : ''}
-                            <button class="btn btn-danger btn-sm" onclick="deleteKey('${key}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
                 
-                tbody.appendChild(row);
+                html += `
+                    <tr>
+                        <td>${key}</td>
+                        <td>${data.keyType === 'pai' ? 'PAI' : 'KOZAW'}</td>
+                        <td>${expiresAt.toLocaleString()}</td>
+                        <td>${data.chatId || 'Not assigned'}</td>
+                        <td>
+                            <span class="status ${statusClass}">
+                                <i class="fas ${isExpired ? 'fa-exclamation-triangle' : isUsed ? 'fa-user-check' : 'fa-check-circle'}"></i>
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                ${data.chatId ? `
+                                    <button class="btn btn-sm btn-secondary" onclick="viewUser('${key}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-sm btn-danger" onclick="showDeleteModal('${key}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
             });
+            
+            tableBody.innerHTML = html;
+        }
+
+        // Show delete confirmation modal
+        function showDeleteModal(key) {
+            currentDeleteKey = key;
+            document.getElementById('deleteKeyName').textContent = key;
+            showModal('deleteModal');
+        }
+
+        // Confirm key deletion
+        function confirmDelete() {
+            if (!currentDeleteKey) return;
+            
+            db.ref('users/' + currentDeleteKey).remove()
+                .then(() => {
+                    showToast('success', 'Success', 'Key deleted successfully');
+                    closeModal('deleteModal');
+                    loadKeys();
+                })
+                .catch(error => {
+                    showToast('error', 'Error', 'Failed to delete key: ' + error.message);
+                });
         }
 
         // View user information
         function viewUser(key) {
-            const data = allKeys[key];
             currentViewKey = key;
+            const keyData = allKeys[key];
             
             document.getElementById('viewKeyName').value = key;
-            document.getElementById('viewChatId').value = data.chatId || 'Not assigned';
-            document.getElementById('viewActivationDate').value = data.activationDate ? 
-                new Date(data.activationDate).toLocaleString() : 'Not activated';
+            document.getElementById('viewKeyType').value = keyData.keyType === 'pai' ? 'PAI' : 'KOZAW';
+            document.getElementById('viewChatId').value = keyData.chatId || 'Not assigned';
+            document.getElementById('viewActivationDate').value = keyData.activatedAt ? 
+                new Date(keyData.activatedAt).toLocaleString() : 'Not activated';
+            
+            // Show/hide clear button based on whether there's a user assigned
+            document.getElementById('clearUserBtn').style.display = keyData.chatId ? 'block' : 'none';
             
             showModal('userModal');
         }
@@ -1235,33 +1365,15 @@
             
             db.ref('users/' + currentViewKey).update({
                 chatId: null,
-                activationDate: null
-            }).then(() => {
+                activatedAt: null
+            })
+            .then(() => {
                 showToast('success', 'Success', 'User assignment cleared');
                 closeModal('userModal');
                 loadKeys();
-            }).catch((error) => {
+            })
+            .catch(error => {
                 showToast('error', 'Error', 'Failed to clear user: ' + error.message);
-            });
-        }
-
-        // Delete key
-        function deleteKey(key) {
-            currentDeleteKey = key;
-            document.getElementById('deleteKeyName').textContent = key;
-            showModal('deleteModal');
-        }
-
-        // Confirm delete
-        function confirmDelete() {
-            if (!currentDeleteKey) return;
-            
-            db.ref('users/' + currentDeleteKey).remove().then(() => {
-                showToast('success', 'Success', 'Key deleted successfully');
-                closeModal('deleteModal');
-                loadKeys();
-            }).catch((error) => {
-                showToast('error', 'Error', 'Failed to delete key: ' + error.message);
             });
         }
     </script>
