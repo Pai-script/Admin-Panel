@@ -627,6 +627,7 @@
             justify-content: center;
             padding: 2rem;
             color: var(--text-light);
+            text-align: center;
         }
 
         .spinner {
@@ -989,6 +990,10 @@
                     <label class="form-label">Activation Date</label>
                     <input type="text" id="viewActivationDate" class="form-input" readonly>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">User Limit</label>
+                    <input type="text" id="viewUserLimit" class="form-input" readonly>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('userModal')">Close</button>
@@ -1009,16 +1014,16 @@
 
     <script>
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBMTe3LDMavOg2oeqKbRSzOVhJYdV44mbo",
-  authDomain: "latest-2b39c.firebaseapp.com",
-  databaseURL: "https://latest-2b39c-default-rtdb.firebaseio.com",
-  projectId: "latest-2b39c",
-  storageBucket: "latest-2b39c.firebasestorage.app",
-  messagingSenderId: "332553786647",
-  appId: "1:332553786647:web:df5f1e301c9a7cdd6b9352",
-  measurementId: "G-LMTFLNFT0C"
-};
+        const firebaseConfig = {
+          apiKey: "AIzaSyBMTe3LDMavOg2oeqKbRSzOVhJYdV44mbo",
+          authDomain: "latest-2b39c.firebaseapp.com",
+          databaseURL: "https://latest-2b39c-default-rtdb.firebaseio.com",
+          projectId: "latest-2b39c",
+          storageBucket: "latest-2b39c.firebasestorage.app",
+          messagingSenderId: "332553786647",
+          appId: "1:332553786647:web:df5f1e301c9a7cdd6b9352",
+          measurementId: "G-LMTFLNFT0C"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -1352,6 +1357,7 @@ const firebaseConfig = {
             document.getElementById('viewChatId').value = keyData.chatId || 'Not assigned';
             document.getElementById('viewActivationDate').value = keyData.activatedAt ? 
                 new Date(keyData.activatedAt).toLocaleString() : 'Not activated';
+            document.getElementById('viewUserLimit').value = keyData.userLimit ? 'Enabled (1 user per key)' : 'Disabled';
             
             // Show/hide clear button based on whether there's a user assigned
             document.getElementById('clearUserBtn').style.display = keyData.chatId ? 'block' : 'none';
