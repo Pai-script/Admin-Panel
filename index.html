@@ -627,7 +627,6 @@
             justify-content: center;
             padding: 2rem;
             color: var(--text-light);
-            text-align: center;
         }
 
         .spinner {
@@ -842,7 +841,7 @@
             </div>
         </div>
 
-        <!-- Main Content -->
+        <!-- Main  -->
         <div class="main">
             <!-- Create Form -->
             <div class="card">
@@ -898,7 +897,7 @@
                 </form>
             </div>
 
-            <!-- Keys Table -->
+            <!-- Keys -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon">
@@ -933,7 +932,7 @@
         </div>
     </div>
 
-    <!-- Delete Modal -->
+    <!-- Delete  -->
     <div class="modal-overlay" id="deleteModal">
         <div class="modal">
             <div class="modal-header">
@@ -961,7 +960,7 @@
         </div>
     </div>
 
-    <!-- View User Modal -->
+    <!-- View User-->
     <div class="modal-overlay" id="userModal">
         <div class="modal">
             <div class="modal-header">
@@ -990,10 +989,6 @@
                     <label class="form-label">Activation Date</label>
                     <input type="text" id="viewActivationDate" class="form-input" readonly>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">User Limit</label>
-                    <input type="text" id="viewUserLimit" class="form-input" readonly>
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('userModal')">Close</button>
@@ -1005,7 +1000,7 @@
         </div>
     </div>
 
-    <!-- Toast Container -->
+   
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Firebase SDK -->
@@ -1013,19 +1008,19 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-          apiKey: "AIzaSyBMTe3LDMavOg2oeqKbRSzOVhJYdV44mbo",
-          authDomain: "latest-2b39c.firebaseapp.com",
-          databaseURL: "https://latest-2b39c-default-rtdb.firebaseio.com",
-          projectId: "latest-2b39c",
-          storageBucket: "latest-2b39c.firebasestorage.app",
-          messagingSenderId: "332553786647",
-          appId: "1:332553786647:web:df5f1e301c9a7cdd6b9352",
-          measurementId: "G-LMTFLNFT0C"
-        };
+        // For Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBMTe3LDMavOg2oeqKbRSzOVhJYdV44mbo",
+  authDomain: "latest-2b39c.firebaseapp.com",
+  databaseURL: "https://latest-2b39c-default-rtdb.firebaseio.com",
+  projectId: "latest-2b39c",
+  storageBucket: "latest-2b39c.firebasestorage.app",
+  messagingSenderId: "332553786647",
+  appId: "1:332553786647:web:df5f1e301c9a7cdd6b9352",
+  measurementId: "G-LMTFLNFT0C"
+};
 
-        // Initialize Firebase
+        // Initialize
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -1039,7 +1034,7 @@
             setInterval(updateDateTime, 1000);
             loadKeys();
             
-            // Event listeners
+            
             document.getElementById('keyForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 createKey();
@@ -1047,29 +1042,28 @@
 
             document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
             
-            // Theme toggle
+     
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
-            // Navigation toggle
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function() {
-                    // Update active state
+                    // Update active 
                     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                     this.classList.add('active');
                     
-                    // Update current key type
+                    // Update current key 
                     currentKeyType = this.getAttribute('data-type');
                     
-                    // Update table title
+                    // Update table 
                     document.getElementById('tableTitle').textContent = 
                         currentKeyType === 'pai' ? "PAI's License Keys" : "KOZAW's License Keys";
                     
-                    // Reload keys for selected type
+                    // Reload keys 
                     loadKeys();
                 });
             });
             
-            // Close modals when clicking outside
+            // Close 
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', function(e) {
                     if (e.target === overlay) {
@@ -1078,14 +1072,14 @@
                 });
             });
             
-            // Initialize theme
+            //  theme
             if (localStorage.getItem('darkMode') === 'true') {
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeToggle').classList.add('dark');
             }
         });
 
-        // Toggle dark/light theme
+        //Night mode
         function toggleTheme() {
             const body = document.body;
             const themeToggle = document.getElementById('themeToggle');
@@ -1093,7 +1087,7 @@
             body.classList.toggle('dark-mode');
             themeToggle.classList.toggle('dark');
             
-            // Save preference
+            // Save 
             localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
         }
 
@@ -1114,7 +1108,7 @@
             });
         }
 
-        // Show toast notification
+        // Show Noti
         function showToast(type, title, message) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -1140,13 +1134,13 @@
             }, 4000);
         }
 
-        // Show modal
+        // Show
         function showModal(modalId) {
             document.getElementById(modalId).classList.add('show');
             document.body.style.overflow = 'hidden';
         }
 
-        // Close modal
+        // Close
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('show');
             document.body.style.overflow = '';
@@ -1176,7 +1170,7 @@
                 }
 
                 const now = Date.now();
-                const expiresAt = now + minutes * 60000; // Convert minutes to milliseconds
+                const expiresAt = now + minutes * 60000; // Convert minutes
 
                 const keyData = {
                     createdAt: now,
@@ -1259,7 +1253,7 @@
             document.getElementById('expiredKeys').textContent = expired;
         }
 
-        // Render keys table
+        // Render keys 
         function renderKeysTable(keys) {
             const tableBody = document.querySelector('#keyTable tbody');
             
@@ -1325,7 +1319,7 @@
             tableBody.innerHTML = html;
         }
 
-        // Show delete confirmation modal
+        // Show delete confirmation
         function showDeleteModal(key) {
             currentDeleteKey = key;
             document.getElementById('deleteKeyName').textContent = key;
@@ -1357,7 +1351,6 @@
             document.getElementById('viewChatId').value = keyData.chatId || 'Not assigned';
             document.getElementById('viewActivationDate').value = keyData.activatedAt ? 
                 new Date(keyData.activatedAt).toLocaleString() : 'Not activated';
-            document.getElementById('viewUserLimit').value = keyData.userLimit ? 'Enabled (1 user per key)' : 'Disabled';
             
             // Show/hide clear button based on whether there's a user assigned
             document.getElementById('clearUserBtn').style.display = keyData.chatId ? 'block' : 'none';
@@ -1365,7 +1358,7 @@
             showModal('userModal');
         }
 
-        // Clear user assignment
+        // Clear user assign
         function clearUserAssignment() {
             if (!currentViewKey) return;
             
